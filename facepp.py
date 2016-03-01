@@ -9,19 +9,19 @@
 # To Public License, Version 2, as published by Sam Hocevar. See
 # http://sam.zoy.org/wtfpl/COPYING (copied as below) for more details.
 #
-#                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-#                        Version 2, December 2004 
+#                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#                        Version 2, December 2004
 #
-#     Copyright (C) 2004 Sam Hocevar <sam@hocevar.net> 
+#     Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
 #
-#     Everyone is permitted to copy and distribute verbatim or modified 
-#     copies of this license document, and changing it is allowed as long 
-#     as the name is changed. 
+#     Everyone is permitted to copy and distribute verbatim or modified
+#     copies of this license document, and changing it is allowed as long
+#     as the name is changed.
 #
-#                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-#       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
+#                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #
-#      0. You just DO WHAT THE FUCK YOU WANT TO. 
+#      0. You just DO WHAT THE FUCK YOU WANT TO.
 
 """a simple facepp sdk
 example:
@@ -130,7 +130,7 @@ class APIError(Exception):
 class API(object):
     key = None
     secret = None
-    server = 'http://api.faceplusplus.com/'
+    server = 'http://apius.faceplusplus.com/v2/'
 
     decode_result = True
     timeout = None
@@ -271,7 +271,7 @@ class _APIProxy(object):
 
     def geturl(self, **kargs):
         """return the request url"""
-        return self._urlbase + '?' + urllib.urlencode(self._mkarg(kargs)) 
+        return self._urlbase + '?' + urllib.urlencode(self._mkarg(kargs))
 
     def visit(self, browser = 'chromium', **kargs):
         """visit the url in browser"""
@@ -288,7 +288,7 @@ class _MultiPartForm(object):
         self.files = []
         self.boundary = mimetools.choose_boundary()
         return
-    
+
     def get_content_type(self):
         return 'multipart/form-data; boundary=%s' % self.boundary
 
@@ -303,16 +303,16 @@ class _MultiPartForm(object):
             mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
         self.files.append((fieldname, filename, mimetype, content))
         return
-    
+
     def __str__(self):
         """Return a string representing the form data, including attached files."""
         # Build a list of lists, each containing "lines" of the
         # request.  Each part is separated by a boundary string.
         # Once the list is built, return a string where each
-        # line is separated by '\r\n'.  
+        # line is separated by '\r\n'.
         parts = []
         part_boundary = '--' + self.boundary
-        
+
         # Add the form fields
         parts.extend(
             [ part_boundary,
@@ -322,7 +322,7 @@ class _MultiPartForm(object):
             ]
             for name, value in self.form_fields
             )
-        
+
         # Add the files to upload
         parts.extend(
             [ part_boundary,
@@ -334,7 +334,7 @@ class _MultiPartForm(object):
             ]
             for field_name, filename, content_type, body in self.files
             )
-        
+
         # Flatten the list and add closing boundary marker,
         # then return CR+LF separated data
         flattened = list(itertools.chain(*parts))
