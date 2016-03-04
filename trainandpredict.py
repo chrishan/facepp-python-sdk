@@ -21,7 +21,7 @@ def print_result(hint, result):
 
 
 api = API(API_KEY, API_SECRET)
-dataset_name = 'testdata'
+dataset_name = 'testdata_1'
 
 
 def train(persons):
@@ -29,7 +29,10 @@ def train(persons):
 
     names = set()
     for name, url in persons:
-        detect_data = api.detection.detect(url=url)
+        try:
+            detect_data = api.detection.detect(url=url)
+        except:
+            continue
         if 'face' in detect_data and len(detect_data['face']) > 0:
             face_id = detect_data['face'][0]['face_id']
 
@@ -64,21 +67,45 @@ def pred(url):
     return '', ''
 
 
+def predict_all():
+    result_file = 'face_recognition_result.txt'
+    if os.path.exists(result_file):
+        finished_urls = [line.strip().split()[0] for line in open(result_file).readlines() if line.strip()]
+    else:
+        finished_urls = []
+
+    to_predict_urls = [url.strip().split() for url in open('/Users/xiaogang/Desktop/viki/10591c_testset.txt').readlines() if url.strip()]
+
+    with open(result_file, 'a') as f:
+        for ind, (url, true_label) in enumerate(to_predict_urls):
+            if (url not in training_urls) and (url not in finished_urls):
+                pred_label, pred_score = pred(url)
+                line = '{}\t{}\t{}\t{}'.format(url, true_label, pred_label, pred_score)
+                print '{}/{}\t{}'.format(ind, len(to_predict_urls), line)
+                f.write('{}\n'.format(line))
+
+    labels = [line.strip().split()[1:3] for line in open(result_file).readlines() if line.strip()]
+    correct_labels = [1 for t, p in labels if p.lower().startswith(t.lower())]
+    print 'accuracy: {}'.format(float(len(correct_labels)) / len(labels))
+
+
 def cleanup(names):
     try:
+        print 'cleaning up group {}'.format(dataset_name)
         api.group.delete(group_name=dataset_name)
     except:
         pass
-    for name in names:
+    for name in set(names):
         try:
+            print 'cleaning up person {}'.format(name)
             api.person.delete(person_name=[name])
         except:
             pass
 
 if __name__ == '__main__':
     persons = []
-    container_id = '10591c'
-    for line in open('../{}_persons.txt'.format(container_id)).readlines():
+    training_data_file = '../training_data.txt'
+    for line in open(training_data_file).readlines():
         url, name = line.strip().split('\t')
         url = url.strip()
         name = name.strip()
@@ -89,18 +116,4 @@ if __name__ == '__main__':
     # cleanup([name for name, url in persons])
     # train(persons)
 
-    result_file = 'face_recognition_result.txt'
-    if os.path.exists(result_file):
-        finished_urls = [line.strip().split()[0] for line in open(result_file).readlines() if line.strip()]
-    else:
-        finished_urls = []
-
-    to_predict_urls = [url.strip() for url in open('../kunownfaces.txt').readlines() if url.strip()]
-
-    with open(result_file, 'a') as f:
-        for ind, url in enumerate(to_predict_urls):
-            if (url not in training_urls) and (url not in finished_urls):
-                pred_label, pred_score = pred(url)
-                line = '{}\t{}\t{}'.format(url, pred_label, pred_score)
-                print '{}/{}\t{}'.format(ind, len(to_predict_urls), line)
-                f.write('{}\n'.format(line))
+    predict_all()
